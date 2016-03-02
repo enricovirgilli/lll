@@ -1,0 +1,3 @@
+source_lens_distance = 2600.,  # [cm] or put 'infinitive' for astrophysics sources
+
+self.source_lens_distance = source_lens_distance 

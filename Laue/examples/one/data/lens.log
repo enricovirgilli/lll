@@ -1,0 +1,19 @@
+MACRO:     0
+TIME:      Tue Mar 25 17:47:02 2008
+INFO:      True
+XTALINFO:  True
+ERANGE:    (200, 400)
+AREA:      True
+MC:        True
+SENS:      True
+S:         True
+PHOTONS:   10000.0
+OFFSET:    0.0
+FRACTION:  0.5
+Tue Mar 25 17:47:02 2008: Writing crystal table
+Tue Mar 25 17:47:02 2008: Calculating effective area
+Tue Mar 25 17:47:02 2008: Calculating MC
+Tue Mar 25 17:47:30 2008: Calculating equivalent surface
+Tue Mar 25 17:47:30 2008: Calculating sensitivity
+Tue Mar 25 17:47:30 2008: End
+

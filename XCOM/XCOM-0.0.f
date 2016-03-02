@@ -1,0 +1,299 @@
+      PROGRAM XCOM
+      CALL MAIN(29, .847, ALE)
+      END
+
+      SUBROUTINE MAIN(NZ, EKEVALE, ALE)
+Cf2py intent(in) NZ, EKEVALE
+Cf2py intent(out) ALE
+      CHARACTER IND(100)*3
+      PARAMETER (ME=1500,MEA=600,MEB=1800)
+      DIMENSION E(108),AFIT(108),BFIT(108),CFIT(108),DFIT(108),
+     1 SCATCO(108),SCATIN(108),PHOT(108),PAIRAT(108),PAIREL(108),
+     2 SATCO(94),SATIN(94),POT(94),PDIF(94),PAIRT(94),PAIRL(94),
+     3 PR1(55),PR2(51),PHC(35,14),
+     4 KM(ME),KZ(ME),LEN(MEA),
+     5 ENB(80),ATWTS(100),
+     7 IDG(14),EDGEN(14),ADG(14),EDGE(94),
+     8 ENG(35,14),ENGL(35),PHCL(35),KMX(14)
+      DATA AVOG/0.60221367/
+      DATA EPAIR1/1.022007E+06/,EPAIR2/2.044014E+06/
+      INCLUDE 'ENB.DAT'
+      INCLUDE 'INDEX.DAT'
+      INCLUDE 'ATWTS.DAT'
+      EN=EKEVALE*1.0E+06
+      KZ(1)=-1
+      KM(1)=0
+      MMAX=1
+      LEN(1)=1
+   76 FORMAT(I6,F12.6)
+   77 FORMAT(12I6)
+   81 FORMAT(14(1X,A2))
+   82 FORMAT(8F9.1)
+      SCTCO=0.0
+      SCTIN=0.0
+      PHT=0.0
+      PRAT=0.0
+      PREL=0.0
+      OPEN (UNIT=7,FILE='MDATX3.'//IND(NZ))
+      READ (7,76) IZ,ATWT1
+      ATWT=ATWTS(NZ)
+      READ (7,77) MAXEDG,MAXE
+      IF(MAXEDG)250,250,240
+  240 READ (7,77) (IDG(I),I=MAXEDG,1,-1)
+      READ (7,81) (ADG(I),I=1,MAXEDG)
+      READ (7,82) (EDGEN(I),I=MAXEDG,1,-1)
+  250 READ (7,251) (E(M),M=1,MAXE)
+  251 FORMAT(1P6E13.5)
+      READ (7,252) (SCATCO(M),M=1,MAXE)
+  252 FORMAT(1P8E10.3)
+      READ (7,252) (SCATIN(M),M=1,MAXE)
+      READ (7,252) (PHOT(M), M=1,MAXE)
+      READ (7,252) (PAIRAT(M),M=1,MAXE)
+      READ (7,252) (PAIREL(M),M=1,MAXE)
+      MAXK=0
+      IF(MAXEDG)280,280,260
+  260 MAXK=MAXE-IDG(MAXEDG)+1
+      READ (7,*) LAX
+      READ (7,*) (KMX(L),L=1,LAX)
+      DO 265 L=1,LAX
+      IMAX=KMX(L)
+      READ (7,*) (ENG(I,L),I=1,IMAX)
+  265 CONTINUE
+      DO 270 L=1,LAX
+      IMAX=KMX(L)
+      READ (7,*) (PHC(I,L),I=1,IMAX)
+  270 CONTINUE
+  280 CLOSE (UNIT=7)
+      IF(MAXEDG)290,290,310
+  290 DO 300 M=1,MAXE
+      SATCO(M)=SCATCO(M)
+      SATIN(M)=SCATIN(M)
+      POT(M)=PHOT(M)
+      PDIF(M)=0.0
+      PAIRT(M)=PAIRAT(M)
+  300 PAIRL(M)=PAIREL(M)
+      GO TO 395
+  310 IRV=MAXEDG
+      DO 325 I=1,MAXEDG
+      IG=IDG(I)
+      IP=I+80
+      SATCO(IP)=SCATCO(IG)
+      SATIN(IP)=SCATIN(IG)
+      POT(IP)=PHOT(IG)
+      PDIF(IP)=PHOT(IG)-PHOT(IG-1)
+      PAIRT(IP)=PAIRAT(IG)
+      PAIRL(IP)=PAIREL(IG)
+      EDGE(IP)=ADG(IRV)
+  325 IRV=IRV-1
+      MB=0
+      DO 340 M=1,MAXE
+      DO 335 I=1,MAXEDG
+      IF(M-IDG(I)+1)330,340,330
+  330 IF(M-IDG(I))335,340,335
+  335 CONTINUE
+      MB=MB+1
+      SATCO(MB)=SCATCO(M)
+      SATIN(MB)=SCATIN(M)
+      POT(MB)=PHOT(M)
+      PDIF(MB)=0.0
+      PAIRT(MB)=PAIRAT(M)
+      PAIRL(MB)=PAIREL(M)
+  340 CONTINUE
+      MS=0
+      DO 360 M=1,MAXE
+      DO 350 I=1,MAXEDG
+      IF(M-IDG(I)+1)350,360,350
+  350 CONTINUE
+      MS=MS+1
+      E(MS)=E(M)
+      SCATCO(MS)=SCATCO(M)
+      SCATIN(MS)=SCATIN(M)
+      PHOT(MS)=PHOT(M)
+      PAIRAT(MS)=PAIRAT(M)
+      PAIREL(MS)=PAIREL(M)
+  360 CONTINUE
+      MAXE=MS
+  395 CALL REV(MAXE,E)
+      CALL REV(MAXE,SCATCO)
+      CALL REV(MAXE,SCATIN)
+      CALL REV(MAXE,PHOT)
+      CALL REV(MAXE,PAIRAT)
+      CALL REV(MAXE,PAIREL)
+      E(51)=EPAIR2
+      E(55)=EPAIR1
+      DO 420 M=1,54
+      TERM=(E(M)-EPAIR1)/E(M)
+  420 PR1(M)=LOG(PAIRAT(M)/(TERM**3))
+      PR1(55)=3.006275*PR1(54)-2.577757*PR1(53)+0.571482*PR1(52)
+      DO 425 M=1,50
+      TERM=(E(M)-EPAIR2)/E(M)
+  425 PR2(M)=LOG(PAIREL(M)/(TERM**3))
+      PR2(51)=3.006275*PR2(50)-2.577757*PR2(49)+0.571482*PR2(48)
+      DO 430 M=1,MAXE
+      E(M)=LOG(E(M))
+      SCATCO(M)=LOG(SCATCO(M))
+      SCATIN(M)=LOG(SCATIN(M))
+  430 PHOT(M)=LOG(PHOT(M))
+      FRAC=AVOG/ATWT
+      ECUT=0.0
+      IF (MAXEDG.GT.0) ECUT=EDGEN(MAXEDG)
+      IMP=1
+      T=EN
+      TL=LOG(T)
+      CALL SCOF(E,SCATCO,MAXE,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,MAXE,RES)
+      SCTCO=SCTCO+FRAC*EXP(RES)
+      CALL SCOF(E,SCATIN,MAXE,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,MAXE,RES)
+      SCTIN=SCTIN+FRAC*EXP(RES)
+      IF(T-EPAIR1)530,530,510
+  510 TERM=(T-EPAIR1)/T
+      CALL SCOF(E,PR1,55,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,55,RES)
+      PRAT=PRAT+FRAC*(TERM**3)*EXP(RES)
+      IF(T-EPAIR2)530,530,520
+  520 TERM=(T-EPAIR2)/T
+      CALL SCOF(E,PR2,51,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,51,RES)
+      PREL=PREL+FRAC*(TERM**3)*EXP(RES)
+  530 IF(MAXEDG)540,540,550
+  540 CALL SCOF(E,PHOT,MAXE,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,MAXE,RES)
+      PHT=PHT+FRAC*EXP(RES)
+      GO TO 600
+  550 IF(T-ECUT)570,560,560
+  560 CALL SCOF(E,PHOT,MAXK,AFIT,BFIT,CFIT,DFIT)
+      CALL BSPOL(TL,E,AFIT,BFIT,CFIT,DFIT,MAXK,RES)
+      PHT=PHT+FRAC*EXP(RES)
+      GO TO 600
+  570 IF(T-EDGEN(IMP))590,580,580
+  580 IMP=IMP+1
+      GO TO 570
+  590 MAXX=KMX(IMP)
+      DO 592 M=1,MAXX
+      ENGL(M)=LOG(1.0E+06)+LOG(ENG(M,IMP))
+  592 PHCL(M)=LOG(PHC(M,IMP))
+      CALL BLIN(TL,ENGL,PHCL,MAXX,RES)
+      PHT=PHT+FRAC*EXP(RES)
+  600 CONTINUE
+      ATNC=SCTIN+PHT+PRAT+PREL
+      AT=ATNC+SCTCO
+      ALE=AT
+      PRINT *, ALE
+      RETURN
+      END
+
+
+      SUBROUTINE REV(NMAX,X)
+C     24 Mar 87. Reverses the order of lists.
+      DIMENSION X(1)
+      NH=NMAX/2
+      DO 10 N=1,NH
+      N1=NMAX-N+1
+      T=X(N1)
+      X(N1)=X(N)
+   10 X(N)=T
+      RETURN
+      END
+
+      SUBROUTINE SCOF(X,F,NMAX,A,B,C,D)
+C     22 Feb 83. Fits F as a function of X, and calculates
+C                cubic spline coefficients A,B,C and D.
+      DIMENSION X(1),F(1),A(1),B(1),C(1),D(1)
+      M1=2
+      M2=NMAX-1
+      S=0.0
+      DO 10 M=1,M2
+      D(M)=X(M+1)-X(M)
+      R=(F(M+1)-F(M))/D(M)
+      C(M)=R-S
+   10 S=R
+      S=0.0
+      R=0.0
+      C(1)=0.0
+      C(NMAX)=0.0
+      DO 20 M=M1,M2
+      C(M)=C(M)+R*C(M-1)
+      B(M)=(X(M-1)-X(M+1))*2.0-R*S
+      S=D(M)
+   20 R=S/B(M)
+      MR=M2
+      DO 30 M=M1,M2
+      C(MR)=(D(MR)*C(MR+1)-C(MR))/B(MR)
+   30 MR=MR-1
+      DO 40 M=1,M2
+      S=D(M)
+      R=C(M+1)-C(M)
+      D(M)=R/S
+      C(M)=C(M)*3.0
+      B(M)=(F(M+1)-F(M))/S-(C(M)+R)*S
+   40 A(M)=F(M)
+      RETURN
+      END
+
+      SUBROUTINE BSPOL(S,X,A,B,C,D,N,G)
+C     22 Feb 83. Evaluates cubic spline as function of S, to obtain
+C                fitted result G.
+      DIMENSION X(1),A(1),B(1),C(1),D(1)
+      IF (X(1).GT.X(N)) GO TO 10
+      IDIR=0
+      MLB=0
+      MUB=N
+      GO TO 20
+   10 IDIR=1
+      MLB=N
+      MUB=0
+   20 IF (S.GE.X(MUB+IDIR)) GO TO 60
+      IF (S.LE.X(MLB+1-IDIR)) GO TO 70
+      ML=MLB
+      MU=MUB
+      GO TO 40
+   30 IF (IABS(MU-ML).LE.1) GO TO 80
+   40 MAV=(ML+MU)/2
+      IF (S.LT.X(MAV)) GO TO 50
+      ML=MAV
+      GO TO 30
+   50 MU=MAV
+      GO TO 30
+   60 MU=MUB+2*IDIR-1
+      GO TO 90
+   70 MU=MLB-2*IDIR+1
+      GO TO 90
+   80 MU=MU+IDIR-1
+   90 Q=S-X(MU)
+      G=((D(MU)*Q+C(MU))*Q+B(MU))*Q+A(MU)
+      RETURN
+      END
+
+      SUBROUTINE BLIN(S,X,Y,N,T)
+C     12 Apr 87. Linear interpolation routine
+      DIMENSION X(1000),Y(1000)
+      IF (X(1).GT.X(N)) GO TO 10
+      IDIR=0
+      MLB=0
+      MUB=N
+      GO TO 20
+   10 IDIR=1
+      MLB=N
+      MUB=0
+   20 IF (S.GE.X(MUB+IDIR)) GO TO 60
+      IF (S.LE.X(MLB+1-IDIR)) GO TO 70
+      ML=MLB
+      MU=MUB
+      GO TO 40
+   30 IF (IABS(MU-ML).LE.1) GO TO 80
+   40 MAV=(ML+MU)/2
+      IF (S.LT.X(MAV)) GO TO 50
+      ML=MAV
+      GO TO 30
+   50 MU=MAV
+      GO TO 30
+   60 MU=MUB+2*IDIR-1
+      GO TO 90
+   70 MU=MLB-2*IDIR+1
+      GO TO 90
+   80 MU=MU+IDIR-1
+   90 Q=S-X(MU)
+      T=Y(MU)+Q*(Y(MU+1)-Y(MU))/(X(MU+1)-X(MU))
+      RETURN
+      END

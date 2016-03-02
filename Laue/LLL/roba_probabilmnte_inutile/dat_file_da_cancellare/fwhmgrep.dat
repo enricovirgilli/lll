@@ -1,0 +1,102 @@
+
+Lenses.py:                 fwhm=1.,                      # [arcmin] mosaicity 
+Lenses.py:        - fwhm: mosaic spread [arcmin]
+Lenses.py:                            hkl=hkl, fwhm=fwhm, microthick=microthick)
+Lenses.py:                'mosaicity (FWHM):         %s arcmin' % self.fwhm,
+Lenses.py:    def bentperfectcrystals(self,x,eta,fwhm,NUM_OF_SIGMA=4.):
+Lenses.py:        width = fwhm
+Lenses.py:        lower = int(x - NUM_OF_SIGMA * fwhm)  
+Lenses.py:        upper = int(x + NUM_OF_SIGMA * fwhm)
+Lenses.py:            h.append(Physics.hat1(i, fwhm, x0=x))       
+Lenses.py:            h.append(Physics.hat1(i, fwhm, x0=x)*self.peakreflecurved(i, 0., 1))
+Lenses.py:        fwhm = self.dim[0]/(self.external_curvature * 100.) #0.003 ### per la cassetta
+Lenses.py:        fwhm_energy=Physics.BraggEnergy(tB-fwhm/2, Booklet.d_hkl(self.Z, self.hkl))-Physics.BraggEnergy(tB+fwhm/2, Booklet.d_hkl(self.Z, self.hkl))
+Lenses.py:        Dthetamax = fwhm#NUM_OF_SIGMA*fwhm
+Lenses.py:                #poss=[(i, self.bentperfectcrystals(EB,eta_energy,fwhm_energy,NUM_OF_SIGMA=4.)[keV]) for i, keV in keVs]               
+Lenses.py:    def largegaussss(self,x,eta,fwhm,NUM_OF_SIGMA=4.):
+Lenses.py:        lower = (x - NUM_OF_SIGMA * fwhm/2)  
+Lenses.py:        upper = (x + NUM_OF_SIGMA * fwhm/2)
+Lenses.py:            h.append(Physics.hat(i, fwhm, x0=x)* math.exp(-muT))
+Lenses.py:    def largegaussssfake(self,x,eta,fwhm,NUM_OF_SIGMA=4.):
+Lenses.py:        width = fwhm
+Lenses.py:        lower = (x - NUM_OF_SIGMA * fwhm)  
+Lenses.py:        upper = (x + NUM_OF_SIGMA * fwhm)
+Lenses.py:            h.append(Physics.hat(i, fwhm, x0=x))       
+Lenses.py:            h.append(Physics.hat(i, fwhm, x0=x) * math.exp(-muT))
+Lenses.py:        return hatg[sl]#*fwhm
+Lenses.py:        #eta = self.fwhm #0.0002  ###per la gaussiana  ##################‡ATTENZIONE
+Lenses.py:        sigma = (self.fwhm/60.)*(math.pi/180.)#################*(1/2.35)
+Lenses.py:        #fwhmm = self.dim[0]/(self.external_curvature * 100.) #0.003 ### per la cassetta
+Lenses.py:                #internal_spread = self.fwhm
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        dim=dim, rad_framewidth=rad_framewidth, tan_framewidth=tan_framewidth, curvature=curvature, structure=structure, fwhm=fwhm,
+Lenses.py:                 fwhm=1.,                   # the Focal, then it will be self.Focal*2 ##### CURVCORRECTION
+Lenses.py:                        external_curvature=external_curvature, structure=structure, fwhm=fwhm,         ######## CURVCORRECTION #####
+Lenses.py:                        hkl=hkl, Z=Z, microthick=microthick,                      # before fwhm=fwhm 
+Lenses.py:                 fwhm=1.,                  # the Focal, then it will be self.Focal*2 ##### CURVCORRECTION
+Lenses.py:                        external_curvature=external_curvature, structure=structure, fwhm=fwhm,          ######## CURVCORRECTION #####
+Lenses.py:                        hkl=hkl, Z=Z, microthick=microthick,                      # before fwhm=fwhm 
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        structure=structure, fwhm=fwhm, hkl=hkl, Z=Z, microthick=microthick,
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        dim=dim, rad_framewidth=rad_framewidth, tan_framewidth=tan_framewidth, curvature=curvature, structure=structure, fwhm=fwhm,
+Lenses.py:                'mosaicity (FWHM):         %s arcmin' % self.fwhm,
+Lenses.py:                 fwhm=1.,  # mosaic spread [arcmin]         ## depends upon the focal (is self.Focal * 2)
+Lenses.py:                        external_curvature=external_curvature, structure=structure, fwhm=fwhm,       ## CURVCORRECTION  there was also external_curvature=external_curvature
+Lenses.py:        fwhm = (self.dim[2] * 180 * 60 ) / (self.external_curvature * 2.6 * 100 * math.pi)  # mosaic spread [arcmin]
+Lenses.py:                'mosaicity (FWHM):         %s arcmin' % fwhm,
+Lenses.py:                 fwhm=1.,  # mosaic spread [arcmin]         ## depends upon the focal (is self.Focal * 2)
+Lenses.py:                        external_curvature=external_curvature, structure=structure, fwhm=fwhm,       ## CURVCORRECTION  there was also external_curvature=external_curvature
+Lenses.py:        fwhm = (self.dim[2] * 180 * 60 ) / (self.external_curvature * 2.6 * 100 * math.pi)  # mosaic spread [arcmin]
+Lenses.py:                'mosaicity (FWHM):         %s arcmin' % fwhm,
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        dim=dim, rad_framewidth=rad_framewidth, tan_framewidth=tan_framewidth, curvature=curvature, structure=structure, fwhm=fwhm,
+Lenses.py:                'mosaicity (FWHM):         %s arcmin' % self.fwhm,
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        dim=dim, rad_framewidth=rad_framewidth, tan_framewidth=tan_framewidth, curvature=curvature, structure=structure, fwhm=fwhm,
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        dim=dim, rad_framewidth=rad_framewidth, tan_framewidth=tan_framewidth, curvature=curvature, structure=structure, fwhm=fwhm,
+Lenses.py:                 fwhm=1.,
+Lenses.py:                        structure=structure, fwhm=fwhm, hkl=hkl, Z=Z, microthick=microthick,
+Lenses.py:    for fwhm in (0.4,):#,0.6,0.8,1.0,1.5,):
+Lenses.py:        b=GRI(Z=32, fwhm=fwhm,error=0.1,Rmax=90.)
+
+
+Physics.py:def eta2fwhm(eta):
+Physics.py:def fwhm2eta(fwhm):
+Physics.py:    return fwhm/sqrt(8.*math.log(2.))
+Physics.py:def hat(x, fwhm=1., x0=0.):
+Physics.py:    if abs(2.*(x-x0)) < fwhm: return 1./fwhm
+Physics.py:def hat1(x, fwhm=1., x0=0.):
+Physics.py:    if abs(2.*(x-x0)) < fwhm: return 1.
+Physics.py:def largegauss(x,eta,fwhm,NUM_OF_SIGMA=4.):
+Physics.py:#    Dthetamax = NUM_OF_SIGMA*fwhm
+Physics.py:#    width = fwhm
+Physics.py:    lower = (x - NUM_OF_SIGMA * fwhm/2)  
+Physics.py:    upper = (x + NUM_OF_SIGMA * fwhm/2)
+Physics.py:        h.append(hat(i, fwhm, x0=x))
+Physics.py:    if distribution=="hat": weight=hat(DeltaTheta, eta2fwhm(eta))
+Physics.py:    #omega = ( eta2fwhm(eta) / 60) * (math.pi / 180)
+
+
+Xtal.py:                 fwhm=1., # mosaic spread [arcmin]
+Xtal.py:        self.Z, self.fwhm, self.microthick = Z, fwhm, microthick
+Xtal.py:        return "%s, fwhm=%s arcmin, microblock thickens=%s" % (Booklet.name[self.Z], self.fwhm, self.microthick)
+Xtal.py:    # fwhm property
+Xtal.py:    def __set_fwhm(self, fwhm):
+Xtal.py:        self.__fwhm = fwhm # arcmin
+Xtal.py:        self.eta = Booklet.arcmin2rad(Physics.fwhm2eta(fwhm)) # radians
+Xtal.py:    def __get_fwhm(self):
+Xtal.py:        return self.__fwhm
+Xtal.py:    def __del_fwhm(self):
+Xtal.py:    fwhm=property(__get_fwhm, __set_fwhm, __del_fwhm, "FWHM [arcmin]")
+Xtal.py:                 fwhm=1., # [arcmin]
+Xtal.py:        Material.__init__(self, Z, fwhm, microthick)
+Xtal.py:            weight=Physics.hat(Dtheta, Physics.eta2fwhm(self.eta))
+Xtal.py:        real_fwhm = (self.dim[2] * 180 * 60 ) / (internal_curvature * 100 * math.pi)  # mosaic spread [arcmin]
+Xtal.py:        #omega = (real_fwhm / 60) * (math.pi / 180) # conversion from arcmin to radians ##### OK
+Xtal.py:        real_fwhm = (self.dim[2] * 180 * 60 ) / (internal_curvature * 100 * math.pi)  # mosaic spread [arcmin]
+Xtal.py:        #omega = (real_fwhm / 60) * (math.pi / 180) # conversion from arcmin to radians ##### OK
+Xtal.py:    #    omega = (self.fwhm / 60) * (math.pi / 180) # conversion from arcmin to radians ##### OK
+Xtal.py:    gaas=Xtal(Z="GaAs", dim=[1,1,0.], hkl=(1,1,1), fwhm=1.)
+Xtal.py:    germ=Xtal(Z=32, dim=[1,1,0.], hkl=(1,1,1), fwhm=2./3)

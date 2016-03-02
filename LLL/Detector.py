@@ -1,0 +1,271 @@
+#!/usr/bin/env python
+"""
+DETECTOR LIBRARY:
+    Library that has to simulate a powerfull detector.
+
+NOTES:
+    the ordinated couples indicate the x,y coordinates.
+
+TODO:
+    change to plural all that should be changed
+"""
+import sys
+import pylab
+import cPickle as pickle
+from math import atan2, pi, modf
+from random import uniform
+import Lenses
+
+class matrix2D(object):
+    def __init__(self, pixels=(11,11)):
+        '''Initialize matrix'''
+        self.pixels = pixels
+        # data containers
+        # In the self.data definition pixels are exchanged
+        # self.pixels[0] is the number of column of the data container, i.e. the x pixels;
+        # self.pixels[1] is the number of rows of the data container, i.e. the y pixels.
+        self.data = pylab.zeros((pixels[1], pixels[0]), 'f')
+
+    def clean(self):
+        '''Reinit the matrix, resetting all the data container'''
+        self.data = pylab.zeros((pixels[1], pixels[0]), 'f')
+
+    def indices(self):
+        '''Generator of all the indices couples (i,j)
+        i is the row index, j the column index'''
+        for i in range(self.pixels[1]): # rows
+            for j in range(self.pixels[0]): # cols
+                yield i,j
+
+    def load(self, infile='/dev/stdin'):
+        '''Loads a matrix file and perform some adjustment in the matrix class
+        instance'''
+        self.data=pylab.load(infile)
+        self.pixels=self.data.shape
+
+    def save(self, filename="/dev/stdout"):
+        """Dumps detector object to file"""
+        pylab.save(filename, self.data, fmt='%g')
+
+    def plot(self, SAVE=False):
+        """plot function to show 3D histogram of data"""
+        pylab.imshow(self.data, interpolation="nearest")
+        pylab.xlabel("row index")
+        pylab.ylabel("col index")
+        if SAVE: pylab.savefig(SAVE)
+        else: pylab.show()
+
+    def plot_x(self, SAVE=False, normalized=False):
+        """Plots normalized x projection of the data"""
+        xdata=range(self.pixels[0])
+        ydata=self.data.sum(axis=0)
+        if normalized is True: xdata=xdata/xdata.sum()
+        pylab.plot(xdata, ydata)
+        pylab.show()
+
+    def plot_y(self, SAVE=False, normalized=False):
+        """Plots normalized y projection of the data"""
+        xdata=range(self.pixels[1])
+        ydata=self.data.sum(axis=1)
+        if normalized is True: ydata=ydata/ydata.sum()
+        pylab.plot(xdata, ydata)
+        pylab.show()
+
+class PSD_cartesian(matrix2D):
+    '''Position Sensitive Detector: cartesian coordinates
+    index are REVERSED IN OUTPUT to have data correctly set
+    (lines = x variation, cols = y variation)
+
+    The detector is defined by the number of pixels and by the pitch [cm].
+    '''
+    def __init__(self, pixels=(11,11), pitches=(1.,1.)):
+        '''Initialize PSD'''
+        matrix2D.__init__(self, pixels)
+        self.pitches = pitches
+        self.sides = tuple([pixel*pitch for pixel,pitch in zip(pixels, pitches)])
+        # lost event counter
+        self.lost = 0.
+
+    def scaletopixel(self, v):
+        '''Scales vector coordinates from user defined units to pixel units'''
+        return [coordinate/pitch for coordinate,pitch in zip(v, self.pitches)]
+
+    def scaletounit(self, v):
+        '''Scales vector coordinates from pixel units to user defined units'''
+        return [coordinate*pitch for coordinate,pitch in zip(v, self.pitches)]
+
+    def pixeltopoint(self, v):
+        '''Returns the coordinates in user defined units of the pixel center'''
+        x= v[0]-.5*self.pixels[0]
+        y= -v[1]+.5*self.pixels[1] # Two signs change...
+        return self.scaletounit((x,y))
+
+    def pointtopixel(self, v, xshift, yshift):
+        pxshift = xshift/self.pitches[0]
+        pyshift = yshift/self.pitches[1]
+        '''Returns the pixel associated to the coordinates in user defined units'''
+        vpixel=self.scaletopixel(v)
+        x = - pxshift + .5*self.pixels[0]+vpixel[0]  # ZZZZZZZZZZZZZZZZZZZZZZZZ
+        y =      0    + .5*self.pixels[1]-vpixel[1] # A sign is changing...
+        return [x,y]
+
+    def xtics(self, xshift):
+        #x = Lenses.Generic()
+        #print x.xshift()
+        #print "det", x.detector_distance()
+        #print "xxx"
+        xx =  xshift + (pylab.arange(self.pixels[0])+0.5)*self.pitches[0]-self.sides[0]/2.
+        return xx
+
+    def ytics(self, yshift):
+        yy = yshift + (pylab.arange(self.pixels[1])+0.5)*self.pitches[1]-self.sides[1]/2.
+        return yy
+
+    def measure(self, photon, xshift=0, yshift=0):
+        '''Measures a photon'''
+        pixel=self.pointtopixel(photon.r[:2], xshift, yshift)
+        # Try to measure a photon
+        # If there is not an IndexError datum is measured, otherwise it is recorded as lost
+        try:
+            # centooooooooooooooooooooooo################################
+            self.data[int(pixel[1])][int(pixel[0])]+=photon.i
+        except IndexError:
+            self.lost+=photon.i
+
+class PSD_polar(matrix2D):
+    """Changes something about the parent class!"""
+    def __init__(self, pixels=1024, pitch=1., sectors=16.):
+        matrix2D.__init__(self, (pixels, sectors))
+        self.pitches=(pitch, 2.*pi/sectors)
+        self.radius=self.pixels[0]*self.pitches[0]
+        self.lost = 0.
+
+    def angle2sector(self, angle):
+        sector=angle/self.pitches[1]
+        if sector >= 0.:
+            return modf(sector/self.pixels[1])[0]*self.pixels[1]
+        else:
+            return (modf(sector/self.pixels[1])[0]+1)*self.pixels[1]
+
+    def cart2polar(self, v):
+        return pylab.norm(v), atan2(v[1], v[0])
+
+    def rtics(self):
+        return (pylab.arange(self.pixels[0])+0.5)*self.pitches[0]
+
+    def scaletopixel(self, v):
+        '''Scales vector coordinates from user defined units to pixel units'''
+        rpixel=v[0]/self.pitches[0]
+        sector=self.angle2sector(v[1])
+        return (rpixel, sector)
+
+    def scaletounit(self, v):
+        '''Scales vector coordinates from pixel units to user defined units'''
+        return [coordinate*pitch for coordinate,pitch in zip(v, self.pitches)]
+
+    def pixeltopoint(self, v):
+        '''Returns the coordinates in user defined units of the pixel center'''
+        return self.scaletounit((x,y))
+
+    def pointtopixel(self, v):
+        '''Returns the pixel associated to the coordinates in user defined units'''
+        return self.scaletopixel(v)
+
+    def measure(self, photon, x, y):
+        '''Measures a photon'''
+        pixel=self.pointtopixel(self.cart2polar(photon.r))
+        # Try to measure a photon
+        # If there is not an IndexError datum is measured, otherwise it is recorded as lost
+        try:
+            self.data[int(pixel[1])][int(pixel[0])]+=photon.i         
+
+        except IndexError:
+            self.lost+=photon.i
+
+    def rforfraction(self, fraction=0.5):
+        rdata=self.data.sum(axis=0)
+        rdata=rdata.cumsum()
+        rdata=rdata/rdata[-1]
+        for i, datum in enumerate(rdata):
+            if datum>fraction: break
+        pseudopixel=(fraction-rdata[i-1])/(rdata[i]-rdata[i-1])+i-1
+        return pseudopixel * self.pitches[1]
+
+
+class PSD(object):
+    def __init__(self, cartesian, polar):
+        self.cartesian=cartesian
+        self.polar=polar
+        self.xtics=self.cartesian.xtics
+        self.ytics=self.cartesian.ytics
+        self.rtics=self.polar.rtics
+        self.rforfraction=self.polar.rforfraction
+        self.radius=self.polar.radius
+        self.sides=self.cartesian.sides
+        self.pitches=self.cartesian.pitches
+
+    def measure(self, photon, xshift, yshift):
+        self.cartesian.measure(photon, xshift, yshift)
+        self.polar.measure(photon, xshift, yshift)
+
+    def clean(self):
+        self.cartesian.clean()
+        self.polar.clean()
+
+    def plot(self):
+        self.cartesian.plot()
+        self.polar.plot()
+
+    def using_string(self):
+        '''Returns the correct using string for gnuplotting the data'''
+        recenter=[s/2 for s in self.sides]
+        pixels=self.cartesian.pixels
+
+        # ENRICO: inversione delle coordinate per vedere il diffratto il
+        #direzione orizzontale 
+        return "($2*%s-(%s)):($1*%s-(%s)):3" % (self.pitches[1], recenter[1],
+                                                self.pitches[0], recenter[0])
+        # ORIGINALE 
+        #return "($1*%s-(%s)):($2*%s-(%s)):3" % (self.pitches[0], recenter[0],
+        #                                        self.pitches[1], recenter[1])
+    def save(self, basename, append=""):
+        pylab.save('%s%s.dat' % (basename, append), self.cartesian.data, fmt='%g')
+        pylab.save('%s_x%s.dat' % (basename, append), self.cartesian.data.sum(axis=0), fmt='%g')
+        pylab.save('%s_y%s.dat' % (basename, append), self.cartesian.data.sum(axis=1), fmt='%g')
+        pylab.save('%s_r%s.dat' % (basename, append), self.polar.data.sum(axis=0), fmt='%g')
+        pylab.save('%s_encircled%s.dat' % (basename, append), self.polar.data.sum(axis=0).cumsum(), fmt='%g')
+        file('%s%s_R50.dat' % (basename, append), 'w').write('%s' % (self.rforfraction(0.5)))
+
+def game(cart, polar):
+    """Game just to illustrate the capabilities of the classes"""
+    from Xtal import Source
+    from math import sin, cos
+    p=Source.Photon()
+    for i in range(128):
+        r=polar.radius*i/256
+        phi=2.*pi*i/128
+        p.r[0]=r*cos(phi)
+        p.r[1]=r*sin(phi)
+        cart.measure(p)
+        polar.measure(p)
+    cart.plot()
+    polar.plot()
+
+
+def tube():
+    from Laue import Source
+    while True:
+        p=Source.Photon()
+        phi=uniform(0., 2*pi)
+        theta=uniform(0.01*pi, .1*pi)
+        k=Source.Physics.spherical2cartesian(1., phi, theta)
+        yield Source.Photon(r=10.*k)
+
+if __name__=='__main__':
+    cart=PSD_cartesian(pixels=(128,128), pitches=(0.1,0.1))
+    polar=PSD_polar(pixels=128, sectors=128, pitch=0.1)
+    game(cart, polar)
+    psd=PSD(cart, polar)
+    print psd.rforfraction()
+
+

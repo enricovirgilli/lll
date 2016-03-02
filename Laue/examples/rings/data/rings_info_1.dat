@@ -1,0 +1,25 @@
+Geometry:                 rings
+Profile:                  spherical
+Thickness profile:        fixed
+Thickness threshold:      (0, 10)
+Thickness factor:         1.0
+Focal Length:             20.0 m
+Inner/Outer radius:       0.253057865607/0.75929516645 m
+Z (Atomic number):        32
+Energy range:             [100, 300] keV
+hkl:                      (1,1,1)
+d_hkl:                    3.26635914794 A
+Cell volume:              181.081335109 A^3
+Structure factor:         154.639881102
+Microcrystal size:        0.0 micron
+A_0 constant:             0.0 keV
+Material factor constant: 4.03627926709 cm^-1
+Crystal tile size:        3x1x0.4 cm^3
+Number of crystals:       3993
+Filling factor:           0.70108801957
+Number of rings:          16
+Crystals volume:          4791.6 cm^3
+Crystals weight:          25.5056868 kg
+mosaicity (FWHM):         1.0 arcmin
+Radial Frame width:       0.1 cm
+Tangential Frame width:   0.1 cm

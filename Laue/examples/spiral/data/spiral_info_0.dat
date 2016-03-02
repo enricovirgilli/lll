@@ -1,0 +1,24 @@
+Geometry:                 spiral
+Profile:                  spherical
+Thickness profile:        fixed
+Thickness threshold:      (0, 10)
+Thickness factor:         1.0
+Focal Length:             20.0 m
+Inner/Outer radius:       0.198022596511/1.18864548854 m
+Z (Atomic number):        29
+Energy range:             [100, 600] keV
+hkl:                      (1,1,1)
+d_hkl:                    2.08706348809 A
+Cell volume:              47.2377130159 A^3
+Structure factor:         88.2881011963
+Microcrystal size:        0.0 micron
+A_0 constant:             0.0 keV
+Material factor constant: 5.04344594644 cm^-1
+Crystal tile size:        1x1x0.4 cm^3
+Number of crystals:       21776
+Filling factor:           0.49856076583
+Crystals volume:          8710.4 cm^3
+Crystals weight:          77.696768 kg
+mosaicity (FWHM):         1.0 arcmin
+Frame width:              0.2 cm
+Misorientation (FWHM):    0.0 arcmin
